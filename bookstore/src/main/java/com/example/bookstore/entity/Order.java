@@ -1,7 +1,7 @@
-package com.example.bookstore.model;
+package com.example.bookstore.entity;
 
-import com.example.bookstore.model.enums.OrderStatus;
-import com.example.bookstore.model.enums.PaymentMethod;
+import com.example.bookstore.entity.enums.OrderStatus;
+import com.example.bookstore.entity.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

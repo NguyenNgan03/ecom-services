@@ -1,25 +1,23 @@
-package com.example.bookstore.model;
+package com.example.bookstore.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cart_items")
+@Table(name = "order_items")
 @Getter
 @Setter
-public class CartItem {
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -28,18 +26,21 @@ public class CartItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPrice;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @CreationTimestamp
-    @Column(name = "added_at", updatable = false)
-    private LocalDateTime addedAt;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal subtotal;
 
     @PrePersist
     @PreUpdate
-    public void validateQuantity() {
+    public void validateAndCalculate() {
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Price must be greater than 0");
+        }
+        this.subtotal = price.multiply(BigDecimal.valueOf(quantity));
     }
 }

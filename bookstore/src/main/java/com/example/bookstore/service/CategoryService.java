@@ -2,21 +2,27 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.dto.request.CategoryDTO;
 import com.example.bookstore.dto.response.CategoryResponseDTO;
-import com.example.bookstore.model.Category;
-import com.example.bookstore.repository.CategoryRepository;
+import com.example.bookstore.entity.Category;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoryService {
-    CategoryDTO createCategory(CategoryDTO categoryDTO);
+    // Create a new category
+    CategoryResponseDTO createCategory(CategoryDTO request);
 
-    List<CategoryResponseDTO> getAllCategories();
+    // Update an existing category
+    CategoryResponseDTO updateCategory(Integer id, CategoryDTO request);
 
+    // Get a category by ID
     CategoryResponseDTO getCategoryById(Integer id);
 
-    CategoryDTO updateCategory(Integer id, CategoryDTO categoryDTO);
+    // Get all categories
+    List<CategoryResponseDTO> getAllCategories();
 
+    // Delete a category (soft delete)
     void deleteCategory(Integer id);
 
-//    Category findByName(String name);
+    // Find category entity by ID (used internally by other services like ProductService)
+    Optional<Category> findCategoryById(Integer id);
 }

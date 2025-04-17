@@ -1,10 +1,12 @@
-package com.example.bookstore.model;
+package com.example.bookstore.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,10 +16,12 @@ import java.util.List;
 @Table(name = "products")
 @Getter
 @Setter
+@SQLDelete(sql = "UPDATE products SET is_deleted = true WHERE id = ?") // Xóa mềm
+@Where(clause = "is_deleted = false")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -64,6 +68,9 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
+    @Column(name = "is_deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false;
+
     @PrePersist
     @PreUpdate
     public void setDefaultValues() {
@@ -75,6 +82,9 @@ public class Product {
         }
         if (isFeatured == null) {
             isFeatured = false;
+        }
+        if (isDeleted == null) {
+            isDeleted = false;
         }
     }
 }

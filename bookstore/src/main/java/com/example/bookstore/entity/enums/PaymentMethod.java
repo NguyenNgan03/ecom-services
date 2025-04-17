@@ -1,4 +1,4 @@
-package com.example.bookstore.model.enums;
+package com.example.bookstore.entity.enums;
 
 public enum PaymentMethod {
     COD,            // Thanh toán khi nhận hàng
