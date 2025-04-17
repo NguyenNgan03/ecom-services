@@ -10,4 +10,5 @@ public class CategoryResponseDTO {
     private String name;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean isDeleted;
 }

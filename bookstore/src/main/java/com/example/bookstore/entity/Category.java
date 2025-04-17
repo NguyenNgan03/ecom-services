@@ -1,12 +1,13 @@
-package com.example.bookstore.model;
+package com.example.bookstore.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import java.util.List;
 @Table(name = "categories")
 @Getter
 @Setter
+@SQLDelete(sql = "UPDATE categories SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +33,15 @@ public class Category {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
+
+    @Column(name = "is_deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false;
+
+    @PrePersist
+    @PreUpdate
+    public void setDefaultValues() {
+        if (isDeleted == null) {
+            isDeleted = false;
+        }
+    }
 }

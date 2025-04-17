@@ -1,4 +1,4 @@
-package com.example.bookstore.model.enums;
+package com.example.bookstore.entity.enums;
 
 public enum OrderStatus {
     PENDING,       // Đơn hàng mới tạo
