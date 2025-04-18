@@ -47,6 +47,7 @@ public class Product {
     private Boolean isFeatured;
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
+
     private Integer stock;
 
     @Column(name = "average_rating", precision = 3, scale = 2) // DECIMAL(3,2)
