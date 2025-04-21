@@ -2,28 +2,36 @@ package com.example.bookstore.controller;
 
 import com.example.bookstore.dto.request.ProductDTO;
 import com.example.bookstore.dto.response.ProductResponseDTO;
+import com.example.bookstore.dto.response.ProductReviewResponseDTO;
+import com.example.bookstore.service.ProductReviewService;
 import com.example.bookstore.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Controller
 @RequestMapping("/api/products")
 @Tag(name = "Product API", description = "API for managing products in the bookstore")
 public class ProductController {
     private final ProductService productService;
+    private final ProductReviewService productReviewService;
 
     @Autowired
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, ProductReviewService productReviewService) {
         this.productService = productService;
+        this.productReviewService = productReviewService;
     }
 
     @PostMapping
@@ -108,5 +116,22 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{id}/details")
+    @Operation(summary = "Get product details with reviews", description = "Retrieves a product by ID along with its reviews")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product and reviews retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<Map<String, Object>> getProductDetailsWithReviews(@PathVariable Integer id) {
+        ProductResponseDTO product = productService.getProductById(id);
+        List<ProductReviewResponseDTO> reviews = productReviewService.getReviewsByProductId(id);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("product", product);
+        response.put("reviews", reviews);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
