@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class UserResponseDTO {
     private Integer id;
+    private Integer roleId;
     private String roleName;
     private String email;
     private String firstName;

@@ -1,0 +1,27 @@
+package com.example.bookstore.security;
+
+import com.example.bookstore.entity.User;
+import com.example.bookstore.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BookstoreUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public BookstoreUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .map(user -> new BookstoreUserDetails(user))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+}
