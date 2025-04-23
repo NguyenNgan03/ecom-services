@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class ProductReviewController {
             @ApiResponse(responseCode = "404", description = "User or product not found"),
             @ApiResponse(responseCode = "409", description = "User has already reviewed this product")
     })
-    // TODO: Add @PreAuthorize("isAuthenticated()") and get userId from principal after implementing authentication
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductReviewResponseDTO> createReview(
             @RequestBody ProductReviewDTO
                     request,
@@ -54,7 +55,7 @@ public class ProductReviewController {
             @ApiResponse(responseCode = "403", description = "User not authorized to update this review"),
             @ApiResponse(responseCode = "404", description = "Review or product not found")
     })
-    // TODO: Add @PreAuthorize("isAuthenticated()") and get userId from principal after implementing authentication
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductReviewResponseDTO> updateReview(
             @PathVariable Integer id,
             @RequestBody ProductReviewDTO request,
@@ -91,7 +92,7 @@ public class ProductReviewController {
             @ApiResponse(responseCode = "403", description = "User not authorized to delete this review"),
             @ApiResponse(responseCode = "404", description = "Review not found")
     })
-    // TODO: Add @PreAuthorize("isAuthenticated()") and get userId from principal after implementing authentication
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteReview(
             @PathVariable Integer id,
             @RequestParam Integer userId) {

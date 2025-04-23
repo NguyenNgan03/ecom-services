@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +47,9 @@ public class User {
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean isActive = true;
 
+    @Column(name="phoneNumber")
+    private String phoneNumber;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -70,6 +74,11 @@ public class User {
         }
         if (isActive == null) {
             isActive = true;
+        }
+        // Hash password before saving
+        if (password != null && !password.startsWith("$2a$")) { // Check if password is already hashed
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            this.password = encoder.encode(password);
         }
     }
 

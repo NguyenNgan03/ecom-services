@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "User with the same email already exists"),
             @ApiResponse(responseCode = "404", description = "Role not found")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication, or allow public access for registration
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserDTO request) {
         UserResponseDTO response = userService.createUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -48,7 +49,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User or role not found"),
             @ApiResponse(responseCode = "409", description = "User with the same email already exists")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN') or #id == principal.id") after implementing authentication
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Integer id,
             @RequestBody UserDTO request) {
@@ -62,7 +63,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN') or #id == principal.id") after implementing authentication
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer id) {
         UserResponseDTO response = userService.getUserById(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -73,7 +74,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         List<UserResponseDTO> response = userService.getAllUsers();
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -85,7 +86,7 @@ public class UserController {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
