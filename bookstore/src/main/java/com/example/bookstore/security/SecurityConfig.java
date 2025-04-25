@@ -36,23 +36,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints for Swagger UI and API docs
-                        .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                        // Authentication API
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
-                        // Category Management API
-                        .requestMatchers("/api/categories/**").permitAll()
-                        // Product API
-                        .requestMatchers("/api/products/**").permitAll()
-                        // Product Review API
-                        .requestMatchers("/api/reviews/**").permitAll()
-                        // Role API
-                        .requestMatchers("/api/roles/**").permitAll()
-                        // User API
-                        .requestMatchers("/api/users/**").permitAll()
-                        // All other endpoints require authentication
-                        .anyRequest().authenticated()
+                        // Cho phép tất cả các yêu cầu mà không cần xác thực
+                        .anyRequest().permitAll()
                 )
+                // Vẫn giữ filter để không phá vỡ cấu trúc, nhưng nó sẽ không ảnh hưởng vì tất cả yêu cầu đã được phép
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -61,7 +48,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
