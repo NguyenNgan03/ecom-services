@@ -1,92 +1,108 @@
 package com.example.bookstore.controller;
 
-import com.example.bookstore.dto.request.LoginRequestDTO;
+import com.example.bookstore.dto.*;
+import com.example.bookstore.dto.JwtResponseDTO;
+import com.example.bookstore.dto.LoginRequestDTO;
+import com.example.bookstore.dto.RefreshTokenRequestDTO;
+import com.example.bookstore.dto.RefreshTokenResponseDTO;
+import com.example.bookstore.dto.RegisterRequestDTO;
 import com.example.bookstore.dto.request.UserDTO;
-import com.example.bookstore.dto.response.LoginResponseDTO;
 import com.example.bookstore.dto.response.UserResponseDTO;
+import com.example.bookstore.entity.RefreshToken;
+import com.example.bookstore.entity.User;
+import com.example.bookstore.security.BookstoreUserDetails;
+import com.example.bookstore.service.RefreshTokenService;
 import com.example.bookstore.service.UserService;
 import com.example.bookstore.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Authentication API", description = "API for user authentication and registration")
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final UserService userService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.userService = userService;
-    }
+    private JwtUtil jwtUtil;
 
-    @PostMapping("/login")
-    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
+    @Operation(summary = "User login", description = "Authenticate user and return JWT and refresh token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Integer userId = Integer.parseInt(userDetails.getUsername().split("@")[0]); // Adjust based on email format
-        String role = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+        String email = loginRequest.getEmail();
+        User user = ((BookstoreUserDetails) authentication.getPrincipal()).getUser();
+        String role = user.getRole().getName();
 
-        String token = jwtUtil.generateToken(userId, role);
-        LoginResponseDTO response = new LoginResponseDTO();
-        response.setToken(token);
-        response.setUserId(userId);
-        response.setRole(role);
+        String jwt = jwtUtil.generateToken(email, role);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(email);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new JwtResponseDTO(jwt, refreshToken.getToken(), email, role));
     }
 
+    @Operation(summary = "User registration", description = "Register a new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Registration successful"),
+            @ApiResponse(responseCode = "400", description = "Email already exists")
+    })
     @PostMapping("/register")
-    @Operation(summary = "User registration", description = "Registers a new user (public access)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data"),
-            @ApiResponse(responseCode = "409", description = "User with the same email already exists")
-    })
-    public ResponseEntity<UserResponseDTO> register(@RequestBody UserDTO request) {
-        // Default to   role (roleId = 2, assuming 1 is ADMIN)
-        request.setRoleId(2);
-        UserResponseDTO response = userService.createUser(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequest) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(registerRequest.getEmail());
+        userDTO.setPassword(registerRequest.getPassword());
+        userDTO.setFirstName(registerRequest.getFirstName());
+        userDTO.setLastName(registerRequest.getLastName());
+        userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
+        userDTO.setRoleId(2); // Giả sử role "USER" có ID = 2
+        userDTO.setIsActive(true);
+
+        UserResponseDTO userResponse = userService.createUser(userDTO);
+
+        String jwt = jwtUtil.generateToken(userResponse.getEmail(), userResponse.getRoleName());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userResponse.getEmail());
+
+        return ResponseEntity.ok(new JwtResponseDTO(jwt, refreshToken.getToken(), userResponse.getEmail(), userResponse.getRoleName()));
     }
 
-    @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "Logs out the authenticated user (client should remove token)")
+    @Operation(summary = "Refresh token", description = "Generate new JWT using refresh token")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Logout successful"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired refresh token")
     })
-    public ResponseEntity<Void> logout() {
-        // In a stateless JWT system, logout is handled by the client removing the token
-        // Clear the security context (optional, since we're stateless)
-        SecurityContextHolder.clearContext();
-        return new ResponseEntity<>(HttpStatus.OK);
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequestDTO request) {
+        String refreshTokenStr = request.getRefreshToken();
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenStr)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (!refreshTokenService.verifyExpiration(refreshToken)) {
+            throw new RuntimeException("Refresh token has expired");
+        }
+
+        User user = refreshToken.getUser();
+        String jwt = jwtUtil.generateToken(user.getEmail(), user.getRole().getName());
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+
+        return ResponseEntity.ok(new RefreshTokenResponseDTO(jwt, newRefreshToken.getToken()));
     }
 }

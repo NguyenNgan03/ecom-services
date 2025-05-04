@@ -39,9 +39,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private User getCurrentUser() {
-        // Tạm thời trả về user với ID = 1 để test mà không cần xác thực
-        return userRepository.findById(1)
-                .orElseThrow(() -> new RuntimeException("Default user not found. Please ensure a user with ID 1 exists in the database."));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(cartItem.getProduct());
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getUnitPrice()); // Sử dụng trực tiếp BigDecimal
+            orderItem.setPrice(cartItem.getUnitPrice());
             orderItem.setSubtotal(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
             return orderItem;
         }).collect(Collectors.toList());

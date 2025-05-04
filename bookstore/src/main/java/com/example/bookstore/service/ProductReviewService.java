@@ -6,8 +6,8 @@ import com.example.bookstore.dto.response.ProductReviewResponseDTO;
 import java.util.List;
 
 public interface ProductReviewService {
-    // Create a new review
-    ProductReviewResponseDTO createReview(Integer userId, ProductReviewDTO request);
+    // Create a new review using email from token
+    ProductReviewResponseDTO createReview(String email, ProductReviewDTO request);
 
     // Update an existing review
     ProductReviewResponseDTO updateReview(Integer id, Integer userId, ProductReviewDTO request);

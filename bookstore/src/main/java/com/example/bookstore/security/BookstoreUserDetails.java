@@ -9,38 +9,25 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class BookstoreUserDetails implements UserDetails {
-
-    private final Integer id;
-    private final String email;
-    private final String password;
-    private final String role;
-    private final boolean isActive;
+    private final User user;
 
     public BookstoreUserDetails(User user) {
-        this.id = user.getId();
-        this.email = user.getEmail();
-        this.password = user.getPassword();
-        this.role = user.getRole().getName(); // e.g., "ADMIN" or "CUSTOMER"
-        this.isActive = user.getIsActive();
-    }
-
-    public Integer getId() {
-        return id;
+        this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return user.getEmail();
     }
 
     @Override
@@ -50,7 +37,7 @@ public class BookstoreUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getIsActive();
     }
 
     @Override
@@ -60,6 +47,10 @@ public class BookstoreUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return !user.getIsDeleted();
+    }
+
+    public User getUser() {
+        return user;
     }
 }

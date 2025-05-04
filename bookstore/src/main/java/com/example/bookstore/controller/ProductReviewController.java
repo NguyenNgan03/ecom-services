@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -31,19 +32,21 @@ public class ProductReviewController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()") // Yêu cầu người dùng đã đăng nhập
     @Operation(summary = "Create a product review", description = "Creates a new review for a product (authenticated user)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Review created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "User or product not found"),
             @ApiResponse(responseCode = "409", description = "User has already reviewed this product")
     })
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductReviewResponseDTO> createReview(
-            @RequestBody ProductReviewDTO
-                    request,
-            @RequestParam Integer userId) {
-        ProductReviewResponseDTO response = productReviewService.createReview(userId, request);
+            @RequestBody ProductReviewDTO request,
+            Principal principal) { // Lấy thông tin người dùng từ token
+        String email = principal.getName(); // Lấy email từ token
+        ProductReviewResponseDTO response = productReviewService.createReview(email, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

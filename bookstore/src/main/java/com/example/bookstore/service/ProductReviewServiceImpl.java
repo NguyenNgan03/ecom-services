@@ -19,7 +19,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 public class ProductReviewServiceImpl implements ProductReviewService {
 
@@ -54,17 +53,17 @@ public class ProductReviewServiceImpl implements ProductReviewService {
     }
 
     @Override
-    public ProductReviewResponseDTO createReview(Integer userId, ProductReviewDTO request) {
-        // Validate user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    public ProductReviewResponseDTO createReview(String email, ProductReviewDTO request) {
+        // Validate user by email from token
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         // Validate product
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + request.getProductId()));
 
         // Check if user already reviewed this product
-        if (productReviewRepository.existsByProductIdAndUserId(request.getProductId(), userId)) {
+        if (productReviewRepository.existsByProductIdAndUserId(request.getProductId(), user.getId())) {
             throw new RuntimeException("User has already reviewed this product");
         }
 
