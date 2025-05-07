@@ -59,6 +59,7 @@ public class UserServiceImpl implements UserService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        System.out.println("User role from DB: " + user.getRole().getName());
         return new BookstoreUserDetails(user);
     }
 
@@ -72,7 +73,7 @@ public class UserServiceImpl implements UserService {
         RoleResponseDTO roleResponseDTO = roleService.getRoleById(request.getRoleId());
         Role role = new Role();
         role.setId(roleResponseDTO.getId());
-        role.setName(roleResponseDTO.getName());
+        role.setName(roleResponseDTO.getName().toLowerCase());
 
         User user = modelMapper.map(request, User.class);
         user.setRole(role);
@@ -127,5 +128,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
         userRepository.delete(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return modelMapper.map(user, UserResponseDTO.class);
     }
 }

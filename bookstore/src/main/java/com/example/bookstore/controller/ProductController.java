@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +42,9 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "409", description = "Product with the same name already exists")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody ProductDTO request) {
+        log.info("Creating product with name: {}", request.getName());
         ProductResponseDTO response = productService.createProduct(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -55,10 +57,11 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "409", description = "Product with the same name already exists")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Integer id,
             @RequestBody ProductDTO request) {
+        log.info("Updating product with id: {}", id);
         ProductResponseDTO response = productService.updateProduct(id, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -70,6 +73,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Integer id) {
+        log.info("Fetching product with id: {}", id);
         ProductResponseDTO response = productService.getProductById(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -79,8 +83,9 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
+        log.info("Fetching all products");
         List<ProductResponseDTO> response = productService.getAllProducts();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -91,6 +96,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Featured products retrieved successfully")
     })
     public ResponseEntity<List<ProductResponseDTO>> getFeaturedProducts() {
+        log.info("Fetching featured products");
         List<ProductResponseDTO> response = productService.getFeaturedProducts();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -102,6 +108,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
     public ResponseEntity<List<ProductResponseDTO>> getProductsByCategory(@PathVariable Integer categoryId) {
+        log.info("Fetching products by category id: {}", categoryId);
         List<ProductResponseDTO> response = productService.getProductsByCategory(categoryId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -112,8 +119,9 @@ public class ProductController {
             @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    // TODO: Add @PreAuthorize("hasRole('ADMIN')") after implementing authentication
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
+        log.info("Deleting product with id: {}", id);
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -125,6 +133,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseEntity<Map<String, Object>> getProductDetailsWithReviews(@PathVariable Integer id) {
+        log.info("Fetching product details with reviews for id: {}", id);
         ProductResponseDTO product = productService.getProductById(id);
         List<ProductReviewResponseDTO> reviews = productReviewService.getReviewsByProductId(id);
 

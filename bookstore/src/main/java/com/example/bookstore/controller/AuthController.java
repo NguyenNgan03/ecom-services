@@ -73,7 +73,7 @@ public class AuthController {
         userDTO.setFirstName(registerRequest.getFirstName());
         userDTO.setLastName(registerRequest.getLastName());
         userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
-        userDTO.setRoleId(2); // Giả sử role "USER" có ID = 2
+        userDTO.setRoleId(1); // Giả sử role "USER" có ID = 2
         userDTO.setIsActive(true);
 
         UserResponseDTO userResponse = userService.createUser(userDTO);

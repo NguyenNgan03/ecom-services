@@ -20,4 +20,7 @@ public interface UserService {
 
     // Delete a user (soft delete)
     void deleteUser(Integer id);
+
+    // Get profile of the authenticated user
+    UserResponseDTO getUserProfile(String email);
 }

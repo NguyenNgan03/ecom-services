@@ -17,7 +17,13 @@ public class BookstoreUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
+        String role = user.getRole().getName().toLowerCase();
+        System.out.println("Mapped role to authority: " + role);
+        // Đảm bảo vai trò không có tiền tố ROLE_
+        if (role.startsWith("ROLE_")) {
+            role = role.substring(5); // Loại bỏ tiền tố ROLE_ nếu có
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
 
     @Override

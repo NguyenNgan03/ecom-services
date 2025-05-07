@@ -31,28 +31,27 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/swagger-ui/**","/api-docs/**",
+                                "/swagger-ui/**",
+                                "/api-docs/**",
                                 "/api/auth/**",
                                 "/api/categories/**",
-                                "/api/products/**",
-//                                "/api/reviews/**",
+                                "/api/products/featured",
+                                "/api/products/category/**",
+                                "/api/products/{id}", // Chỉ GET /api/products/{id} là public
+                                "/api/products/{id}/details",
                                 "/api/orders/**",
                                 "/api/cart/**",
-                                "/api/users/**",
                                 "/api/roles/**"
                         ).permitAll()
-
                         .requestMatchers(
                                 "/api/reviews/**",
-                                "/api/orders/**",
-                                "/api/cart/**"
+                                "/api/users/profile"
                         ).authenticated()
-//
-//                        .requestMatchers(
-//                                "/api/users/**"
-//                        ).hasRole("ADMIN")
-
-//                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/api/products/**",  // Bao gồm POST, PUT, DELETE
+                                "/api/users/**"
+                        ).hasAuthority("admin")
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
